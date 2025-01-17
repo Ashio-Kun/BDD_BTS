@@ -1,0 +1,158 @@
+--Création des tables :
+
+--Création de la table Etudiant :
+CREATE TABLE Etudiant (
+idE INTEGER PRIMARY KEY AUTOINCREMENT,
+nom TEXT NOT NULL,
+prenom TEXT NOT NULL
+);
+
+--Création de la table de la liste de films :
+CREATE TABLE Film_possede (
+idF INTEGER PRIMARY KEY AUTOINCREMENT,
+idE INTEGER,
+titre TEXT NOT NULL,
+anneeSortie INTEGER NOT NULL,
+FOREIGN KEY (idE) REFERENCES Etudiant(idE)
+);
+
+--Création de la table s'appartenance des films à un genre :
+CREATE TABLE Appartient (
+idF INTEGER,
+idG INTEGER,
+FOREIGN KEY (idF) REFERENCES Film_possede(idF),
+FOREIGN KEY (idG) REFERENCES Genre(idG)
+);
+
+--Création de la table des genres :
+CREATE TABLE Genre (
+idG INTEGER PRIMARY KEY AUTOINCREMENT,
+nomG TEXT
+);
+
+--Création de la table des prêts :
+CREATE TABLE Pret (
+idP INTEGER PRIMARY KEY AUTOINCREMENT,
+idF INTEGER,
+idE INTEGER,
+etatPret TEXT NOT NULL,
+etatMateriel TEXT NOT NULL,
+etatRendu TEXT NOT NULL,
+debut TEXT NOT NULL,
+fin TEXT NOT NULL,
+FOREIGN KEY (idF) REFERENCES Film_possede(idF),
+FOREIGN KEY (idE) REFERENCES Etudiant(idE)
+);
+
+
+--Cette table est utilisée uniquement pour afficher
+--une ligne de séparation entre l'apperçu complet
+--des tables et les résultats des recherches demandées
+--dans la partie 3
+CREATE TABLE Placeholder (
+SEPARATOR TEXT NOT NULL
+);
+
+
+
+--Insertion de valeurs :
+
+--Insertion des étudiants :
+INSERT INTO Etudiant (nom, prenom) VALUES
+('Ould Cadi-Ravily', 'Sacha'),
+('David', 'Robin'),
+('Adam', 'Alexandre'),
+('Legros', 'Jules'),
+('Facchin', 'Alexandre'),
+('Suzaku', 'Ashio');
+
+--Insertion de la liste des films ainsi que l'idE :
+INSERT INTO Film_possede (idE, titre, anneeSortie) VALUES
+(1, 'Deadpool', 2016),
+(3, 'Star Wars : Le Retour du Jedi', 1983),
+(2, 'Dune 1', 2021),
+(1, 'Deadpool 2', 2018),
+(1, 'Deadpool et Wolverine', 2024),
+(6, 'Saint-Ex', 2024),
+(6, 'Jʼaccuse', 2019),
+(2, 'Dune 2', 2024),
+(4, 'Donne moi des ailes', 2019),
+(5, 'LʼExorciste (1973)', 1973),
+(6, 'La Liste de Schindler', 1993);
+
+--Insertion de la liste de genres :
+INSERT INTO Genre (nomG) VALUES
+('Action'),
+('Science-fiction'),
+('Futuriste'),
+('Horreur'),
+('Biographie romancée'),
+('Biographie'),
+('Historique');
+
+--Insertion d'une liste de prets avec différents états et caractéristiques :
+INSERT INTO Pret (idF, idE, etatPret, etatMateriel, etatRendu, debut, fin) VALUES
+(1, 2, 'Valide', 'Bon', 'N/A', '13/01/2025 12:55', '20/01/2025 12:55'),
+(3, 3, 'En retard', 'Bon', 'N/A', '06/01/2025 16:47', '13/01/2025 16:47'),
+(2, 1, 'Valide', 'Comme neuf', 'N/A', '15/01/2025 14:30', '22/01/2025 14:30'),
+(4, 6, 'Terminé/Rendu', 'Comme neuf', 'Comme neuf', '28/12/2024 17:16', '04/01/2025 17:16'),
+(6, 5, 'En retard', 'Bon', 'N/A', '15/12/2024 16:32', '22/12/2024 16:32'),
+(7, 4, 'Valide', 'Correct', 'N/A', '14/01/2025 15:23', '21/01/2025 15:23'),
+(11, 5, 'Terminé/Rendu', 'Bon', 'Correct', '07/12/2024 16:37', '15/12/2024 16:37'),
+(10, 4, 'Terminé/Rendu', 'Comme neuf', 'Bon', '06/12/2024 14:33', '14/12/2024 14:33');
+
+--Insertion des associations entre film et genre :
+INSERT INTO Appartient (idF, idG) VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 1),
+(5, 1),
+(6, 5),
+(7, 7),
+(8, 3),
+(9, 6),
+(10, 4),
+(11, 7);
+
+--Insertion de la ligne de la table Placeholder :
+INSERT INTO Placeholder (SEPARATOR) VALUES
+('<==========================================================================================================================================================>');
+
+
+
+--Listage de toutes les tables pour un apperçu de la totalité de la base de données :
+SELECT * FROM Etudiant;
+SELECT * FROM Film_possede;
+SELECT * FROM Genre;
+SELECT * FROM Appartient;
+SELECT * FROM Pret;
+
+
+
+--Affichage le la ligne de séparation :
+SELECT * FROM Placeholder;
+
+
+
+--Recherches :
+
+--Recherche par année de sortie (ici pour les films sortis en 2024) :
+SELECT idF, titre, anneeSortie
+FROM Film_possede
+WHERE anneeSortie = 2024;
+
+--Recherche pour les étudiants ayant oublié de rendre un film (retard) :
+SELECT Pret.idF, titre, idP, etatPret, Pret.idE, nom, prenom, debut, fin
+FROM Pret, Etudiant, Film_possede
+WHERE etatPret LIKE 'en retard'
+AND Pret.idE = Etudiant.idE
+AND Pret.idE = Film_possede.idF;
+
+--Recherche déterioration :
+SELECT idP, Pret.idF, titre, Pret.idE, nom, prenom, etatMateriel, etatRendu, debut, fin
+FROM Pret, Film_possede, Etudiant
+WHERE etatMateriel NOT LIKE etatRendu
+AND etatRendu NOT LIKE 'n/a'
+AND Pret.idE = Etudiant.idE
+AND Pret.idF = Film_possede.idF;
